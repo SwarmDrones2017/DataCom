@@ -24,14 +24,12 @@ from ctypes.util import find_library
 import random
 import nmap
 
-#nm = nmap.PortScanner()             # instantiate nmap.PortScanner object
-
-
 ############################################################################################
 #
 #  Adafruit i2c interface enhanced with performance / error handling enhancements
 #
 ############################################################################################
+
 class I2C:
 
         def __init__(self, address, bus=smbus.SMBus(1)):
@@ -134,12 +132,12 @@ class I2C:
         def getMisses(self):
                 return self.misses
 
-
 ############################################################################################
 #
 #  Ultrasonic range finder
 #
 ############################################################################################
+
 class SRF02:
         i2c = None
 
@@ -194,26 +192,28 @@ GPIO.setup(GPIO_BUTTON, GPIO.IN, GPIO.PUD_DOWN)
 #------------------------------------------------------------
 # Let's go!
 #------------------------------------------------------------
+
+#Adress of sensors
 nrange = SRF02(0x70)
 wrange = SRF02(0x71)
 srange = SRF02(0X72)
 erange = SRF02(0X73)
-arange = SRF02(0X74)
 
+#Bool for 
 alreadysendn = False
 alreadysendw = False
 alreadysends = False
 alreadysende = False
-alreadysenda = False
 
+#Adress and port using for communication
 port = 55555;
 adresse = ('',55555)
 
-
+#Creation of UDP packet
 try:
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         s.settimeout(1)
-        s.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+	s.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
 except socket.error:
         print 'Failed to create socket'
         sys.exit()
@@ -221,11 +221,13 @@ except socket.error:
 signal.signal(signal.SIGINT, ShutdownHandler)
 
 isPresent = False
+#Infinite loop
 while 1:
         
         keep_looping = True
         reponse = ''
-        try :
+        #Send the message Télephone in broadcast on the network
+	try :
                 if isPresent == False :
 			addr = '255.255.255.255'
                 	msg = 'Telephone ?\n'
@@ -233,12 +235,14 @@ while 1:
                 
                 reponse, adresse = s.recvfrom(1024)
 		print reponse
+	#if no answer, re-send the message in broadacst on the network
         except socket.timeout :
                 print "pas de ack"
 		isPresent = False
-                               
+	                       
         if reponse == 'Oui\n' :
                 if isPresent == False :
+			#take adress of answer
                         addr_smartphone = adresse
                         isPresent = True
                         
@@ -248,16 +252,16 @@ while 1:
                 wrange.pingProximity()
                 srange.pingProximity()
                 erange.pingProximity()
-                #arange.pingProximity()
-
+		
                 time.sleep(0.1)
                 nproximity = nrange.readProximity()
                 wproximity = wrange.readProximity()
                 sproximity = srange.readProximity()
                 eproximity = erange.readProximity()
-                #aproximity = arange.readProximity()
                 
                 c = "Sensor "
+		
+		#Send distance if less than distance threshold
                 if nproximity <= 150:
                                                         
                         c += str(nproximity)+":n,"
@@ -292,24 +296,13 @@ while 1:
                         if(alreadysende == False):
                                 c += "151:n,"
                                 alreadysende = True
-
-                #if aproximity <= 150:
-                #                                        
-                #        c += str(aproximity)+":n,"
-                #        alreadysenda = False
-                #else:
-                #        if(alreadysenda == False):
-                #                c += "151:n,"
-                #                alreadysenda = True
-                                          
+				
                 c += "\n"
                 if(c != "Sensor \n"):
-                        s.sendto(c, adresse)                        
-                                                                         
+                        s.sendto(c, adresse)
+		
+		#Display of data
                 print "North "+ str(nproximity)+" cm"
                 print "West " + str(wproximity) + " cm"
                 print "South " + str(sproximity) + " cm"
-                print "Est " + str(eproximity) + " cm" 
-                #print "Above " + str(aproximity) + " cm"
-                                        
-
+                print "Est " + str(eproximity) + " cm"

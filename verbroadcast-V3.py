@@ -199,7 +199,7 @@ wrange = SRF02(0x71)
 srange = SRF02(0X72)
 erange = SRF02(0X73)
 
-#Bool for 
+#Bool for no send several time 
 alreadysendn = False
 alreadysendw = False
 alreadysends = False
@@ -235,14 +235,14 @@ while 1:
                 
                 reponse, adresse = s.recvfrom(1024)
 		print reponse
-	#if no answer, re-send the message in broadacst on the network
+	#If no answer, re-send the message in broadacst on the network
         except socket.timeout :
                 print "pas de ack"
 		isPresent = False
 	                       
         if reponse == 'Oui\n' :
                 if isPresent == False :
-			#take adress of answer
+			#Take adress of answer
                         addr_smartphone = adresse
                         isPresent = True
                         
@@ -299,6 +299,7 @@ while 1:
 				
                 c += "\n"
                 if(c != "Sensor \n"):
+			#Send value of sensors
                         s.sendto(c, adresse)
 		
 		#Display of data
